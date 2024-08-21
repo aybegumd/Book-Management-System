@@ -18,6 +18,7 @@ public class Book {
     private String title;
     private LocalDate publishedDate;
     private String ISBN;
+    private boolean available;
 
 
     @ManyToOne
@@ -27,8 +28,6 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
-
-    private boolean available;
 
     @OneToOne
     @JoinColumn(name = "publisher_id")

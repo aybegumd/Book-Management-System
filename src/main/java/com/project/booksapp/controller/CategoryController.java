@@ -1,6 +1,7 @@
 package com.project.booksapp.controller;
 
 import com.project.booksapp.entity.Category;
+import com.project.booksapp.repository.CategoryRepository;
 import com.project.booksapp.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,35 +18,45 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    @GetMapping
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @GetMapping("getAllCategories")
     public ResponseEntity<List<Category>> getAllCategories() {
-        List<Category> categories = categoryService.getAllCategories();
-        return new ResponseEntity<>(categories, HttpStatus.OK);
+        List<Category> categoryList = categoryRepository.findAll();
+        if (categoryList.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(categoryList, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getCategoryById/{id}")
     public ResponseEntity<Optional<Category>> getCategoryById(@PathVariable Long id) {
-        Optional<Category> category = categoryService.getCategoryById(id);
-        return category.isPresent() ? new ResponseEntity<>(category, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        Optional<Category> categoryData = categoryRepository.findById(id);
+        return categoryData.isPresent() ? new ResponseEntity<>(categoryData, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping
+    @PostMapping("/saveCategory")
     public ResponseEntity<Category> saveCategory(@RequestBody Category category) {
         Category savedCategory = categoryService.saveCategory(category);
-        return new ResponseEntity<>(savedCategory, HttpStatus.CREATED);
+        return new ResponseEntity<>(savedCategory, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/updateCategoryById/{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
-        if (!categoryService.getCategoryById(id).isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        Optional<Category> categoryData = categoryRepository.findById(id);
+
+        if (categoryData.isPresent()) {
+            Category updatedCategoryData = categoryData.get();
+            updatedCategoryData.setName(category.getName());
+
+            Category savedCategory = categoryRepository.save(updatedCategoryData);
+            return new ResponseEntity<>(savedCategory, HttpStatus.OK);
         }
-        category.setId(id);
-        Category updatedCategory = categoryService.saveCategory(category);
-        return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/deleteCategoryById/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         if (!categoryService.getCategoryById(id).isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -53,5 +64,5 @@ public class CategoryController {
         categoryService.deleteCategory(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
 }
+
