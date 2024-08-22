@@ -14,7 +14,7 @@ public class Publisher {
     private Long id;
     private String name;
 
-        @OneToOne(mappedBy = "publisher")
+        @OneToOne(mappedBy = "publisher", fetch = FetchType.EAGER)
         private Book book;
 
 }
