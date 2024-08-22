@@ -1,7 +1,6 @@
 package com.project.booksapp.controller;
 
 import com.project.booksapp.entity.Publisher;
-import com.project.booksapp.repository.PublisherRepository;
 import com.project.booksapp.service.PublisherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,56 +11,59 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/publishers")
+@RequestMapping("/api/publishers")
 public class PublisherController {
 
     @Autowired
     private PublisherService publisherService;
 
-    @Autowired
-    private PublisherRepository publisherRepository;
-
-    @GetMapping("getAllPublishers")
+    @GetMapping
     public ResponseEntity<List<Publisher>> getAllPublishers() {
-        List<Publisher> publisherList = publisherRepository.findAll();
+        List<Publisher> publisherList = publisherService.getAllPublishers();
         if (publisherList.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(publisherList, HttpStatus.OK);
     }
 
-    @GetMapping("/getPublisherById/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Optional<Publisher>> getPublisherById(@PathVariable Long id) {
-        Optional<Publisher> publisherData = publisherRepository.findById(id);
-        return publisherData.isPresent() ? new ResponseEntity<>(publisherData, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        Optional<Publisher> publisher = publisherService.getPublisherById(id);
+        if (!publisher.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(publisher, HttpStatus.OK);
     }
 
-    @PostMapping("/savePublisher")
+    @PostMapping
     public ResponseEntity<Publisher> savePublisher(@RequestBody Publisher publisher) {
         Publisher savedPublisher = publisherService.savePublisher(publisher);
         return new ResponseEntity<>(savedPublisher, HttpStatus.OK);
     }
 
-    @PutMapping("/updatePublisherById/{id}")
-    public ResponseEntity<Publisher> updatePublisher(@PathVariable Long id, @RequestBody Publisher publisher) {
-        Optional<Publisher> publisherData = publisherRepository.findById(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<Publisher> updatePublisherById(@PathVariable Long id, @RequestBody Publisher publisher) {
+        Optional<Publisher> publisherData = publisherService.getPublisherById(id);
 
         if (publisherData.isPresent()) {
             Publisher updatedPublisherData = publisherData.get();
             updatedPublisherData.setName(publisher.getName());
 
-            Publisher savedPublisher = publisherRepository.save(updatedPublisherData);
+            Publisher savedPublisher = publisherService.savePublisher(updatedPublisherData);
             return new ResponseEntity<>(savedPublisher, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @DeleteMapping("/deletePublisherById/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePublisher(@PathVariable Long id) {
-        if (!publisherService.getPublisherById(id).isPresent()) {
+        Optional<Publisher> publisher = publisherService.getPublisherById(id);
+
+        if (!publisher.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        publisherService.deletePublisher(id);
+
+        publisherService.deletePublisherById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
