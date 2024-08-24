@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/books")
+@RequestMapping("/api/books")
 public class BookController {
 
     @Autowired
@@ -19,42 +19,52 @@ public class BookController {
 
     @GetMapping
     public ResponseEntity<List<Book>> getAllBooks() {
-        List<Book> books = bookService.getAllBooks();
-        return new ResponseEntity<>(books, HttpStatus.OK);
+        List<Book> bookList = bookService.getAllBooks();
+        if (bookList.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(bookList, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Optional<Book>> getBookById(@PathVariable Long id) {
         Optional<Book> book = bookService.getBookById(id);
-        return book.isPresent() ? new ResponseEntity<>(book, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (!book.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(book, HttpStatus.OK);
     }
 
     @PostMapping
     public ResponseEntity<Book> saveBook(@RequestBody Book book) {
         Book savedBook = bookService.saveBook(book);
-        return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
+        return new ResponseEntity<>(savedBook, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book book) {
-        // Check if the book exists
-        if (!bookService.getBookById(id).isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        book.setId(id);
+    public ResponseEntity<Book> updateBookById(@PathVariable Long id, @RequestBody Book book) {
+        Optional<Book> bookData = bookService.getBookById(id);
 
-        Book updatedBook = bookService.saveBook(book);
-        return new ResponseEntity<>(updatedBook, HttpStatus.OK);
+        if (bookData.isPresent()) {
+            Book updatedBookData = bookData.get();
+            updatedBookData.setTitle(book.getTitle());
+            updatedBookData.setAuthor(book.getAuthor());
+
+            Book savedBook = bookService.saveBook(updatedBookData);
+            return new ResponseEntity<>(savedBook, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
-        if (!bookService.getBookById(id).isPresent()) {
+        Optional<Book> book = bookService.getBookById(id);
+
+        if (!book.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
         bookService.deleteBook(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
-
 }

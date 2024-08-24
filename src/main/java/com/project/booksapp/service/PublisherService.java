@@ -29,4 +29,8 @@ public class PublisherService {
     public void deletePublisher(Long id) {
         publisherRepository.deleteById(id);
     }
+
+    public void deletePublisherById(Long id) {
+        publisherRepository.deleteById(id);
+    }
 }

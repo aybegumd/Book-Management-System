@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Entity
 @Data
+@Table(name = "publishers")
 public class Publisher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,7 +14,7 @@ public class Publisher {
     private Long id;
     private String name;
 
-        @OneToOne(mappedBy = "publisher")
-        private Book book;
+    @OneToOne(mappedBy = "publisher", fetch = FetchType.EAGER)
+    private Book book;
 
 }

@@ -11,48 +11,72 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/authors")
+@RequestMapping("/api/authors")
 public class AuthorController {
 
     @Autowired
     private AuthorService authorService;
 
+
     @GetMapping
     public ResponseEntity<List<Author>> getAllAuthors() {
-        List<Author> authors = authorService.getAllAuthors();
-        return new ResponseEntity<>(authors, HttpStatus.OK);
+        List<Author> authorList = authorService.getAllAuthors();
+        if (authorList.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(authorList, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Optional<Author>> getAuthorById(@PathVariable Long id) {
         Optional<Author> author = authorService.getAuthorById(id);
-        return author.isPresent() ? new ResponseEntity<>(author, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (author == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(author, HttpStatus.OK);
+    }
+
+    @GetMapping("/book/{bookId}")
+    public ResponseEntity<Optional<Author>> getAuthorByBookId(@PathVariable Long bookId) {
+        Optional<Author> author = authorService.getAuthorByBookId(bookId);
+        if (author.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(author, HttpStatus.OK);
     }
 
     @PostMapping
     public ResponseEntity<Author> saveAuthor(@RequestBody Author author) {
         Author savedAuthor = authorService.saveAuthor(author);
-        return new ResponseEntity<>(savedAuthor, HttpStatus.CREATED);
+        return new ResponseEntity<>(savedAuthor, HttpStatus.OK);
     }
 
+
     @PutMapping("/{id}")
-    public ResponseEntity<Author> updateAuthor(@PathVariable Long id, @RequestBody Author author) {
-        if (!authorService.getAuthorById(id).isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<Author> updateAuthorById(@PathVariable Long id, @RequestBody Author author) {
+        Optional<Author> authorData = authorService.getAuthorById(id);
+
+        if (authorData.isPresent()) {
+            Author updatedAuthorData = authorData.get();
+            updatedAuthorData.setName(author.getName());
+
+            Author savedAuthor = authorService.saveAuthor(updatedAuthorData);
+            return new ResponseEntity<>(savedAuthor, HttpStatus.OK);
         }
-        author.setId(id);
-        Author updatedAuthor = authorService.saveAuthor(author);
-        return new ResponseEntity<>(updatedAuthor, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAuthor(@PathVariable Long id) {
-        if (!authorService.getAuthorById(id).isPresent()) {
+        Optional<Author> author = authorService.getAuthorById(id);
+
+        if (!author.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        authorService.deleteAuthor(id);
+
+        authorService.deleteAuthorById(id);
+
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+    } }
 
-
-}

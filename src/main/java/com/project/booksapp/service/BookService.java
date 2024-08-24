@@ -3,6 +3,7 @@ package com.project.booksapp.service;
 
 import com.project.booksapp.entity.Book;
 import com.project.booksapp.repository.BookRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 
 @Service
+@Transactional
 public class BookService {
 
     @Autowired
@@ -32,4 +34,5 @@ public class BookService {
     public void deleteBook(Long id) {
         bookRepository.deleteById(id);
     }
+
 }

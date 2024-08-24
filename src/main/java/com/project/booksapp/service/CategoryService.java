@@ -2,6 +2,7 @@ package com.project.booksapp.service;
 
 import com.project.booksapp.entity.Category;
 import com.project.booksapp.repository.CategoryRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class CategoryService {
 
     @Autowired
@@ -27,6 +29,10 @@ public class CategoryService {
     }
 
     public void deleteCategory(Long id) {
+        categoryRepository.deleteById(id);
+    }
+
+    public void deleteCategoryById(Long id) {
         categoryRepository.deleteById(id);
     }
 }

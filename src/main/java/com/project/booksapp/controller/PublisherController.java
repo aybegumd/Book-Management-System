@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/publishers")
+@RequestMapping("/api/publishers")
 public class PublisherController {
 
     @Autowired
@@ -19,40 +19,51 @@ public class PublisherController {
 
     @GetMapping
     public ResponseEntity<List<Publisher>> getAllPublishers() {
-        List<Publisher> publishers = publisherService.getAllPublishers();
-        return new ResponseEntity<>(publishers, HttpStatus.OK);
+        List<Publisher> publisherList = publisherService.getAllPublishers();
+        if (publisherList.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(publisherList, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Optional<Publisher>> getPublisherById(@PathVariable Long id) {
         Optional<Publisher> publisher = publisherService.getPublisherById(id);
-        return publisher.isPresent() ? new ResponseEntity<>(publisher, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (!publisher.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(publisher, HttpStatus.OK);
     }
 
     @PostMapping
     public ResponseEntity<Publisher> savePublisher(@RequestBody Publisher publisher) {
         Publisher savedPublisher = publisherService.savePublisher(publisher);
-        return new ResponseEntity<>(savedPublisher, HttpStatus.CREATED);
+        return new ResponseEntity<>(savedPublisher, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Publisher> updatePublisher(@PathVariable Long id, @RequestBody Publisher publisher) {
-        if (!publisherService.getPublisherById(id).isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<Publisher> updatePublisherById(@PathVariable Long id, @RequestBody Publisher publisher) {
+        Optional<Publisher> publisherData = publisherService.getPublisherById(id);
+
+        if (publisherData.isPresent()) {
+            Publisher updatedPublisherData = publisherData.get();
+            updatedPublisherData.setName(publisher.getName());
+
+            Publisher savedPublisher = publisherService.savePublisher(updatedPublisherData);
+            return new ResponseEntity<>(savedPublisher, HttpStatus.OK);
         }
-        publisher.setId(id);
-        Publisher updatedPublisher = publisherService.savePublisher(publisher);
-        return new ResponseEntity<>(updatedPublisher, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePublisher(@PathVariable Long id) {
-        if (!publisherService.getPublisherById(id).isPresent()) {
+        Optional<Publisher> publisher = publisherService.getPublisherById(id);
+
+        if (!publisher.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        publisherService.deletePublisher(id);
+
+        publisherService.deletePublisherById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
-
 }
