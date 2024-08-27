@@ -1,7 +1,9 @@
 package com.project.booksapp.service;
 
 import com.project.booksapp.entity.Author;
+import com.project.booksapp.entity.Book;
 import com.project.booksapp.repository.AuthorRepository;
+import com.project.booksapp.repository.BookRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,9 @@ public class AuthorService {
     @Autowired
     private AuthorRepository authorRepository;
 
+    @Autowired
+    private BookRepository bookRepository;
+
     public List<Author> getAllAuthors() {
         return authorRepository.findAll();
     }
@@ -28,22 +33,29 @@ public class AuthorService {
         return authorRepository.save(author);
     }
 
-    public void deleteAuthor(Long id) {
-        authorRepository.deleteById(id);
-    }
-
-    public Optional<Author> updateAuthorById(Long id) {
-        return authorRepository.findById(id);
-    }
-
     public void deleteAuthorById(Long id) {
         authorRepository.deleteById(id);
     }
-    public List<Author> saveAuthors(List<Author> authors) {
-        return authorRepository.saveAll(authors);
+
+    public Author addBookToAuthor(Long authorId, Book book) {
+        Optional<Author> optionalAuthor = authorRepository.findById(authorId);
+        if (optionalAuthor.isPresent()) {
+            Author author = optionalAuthor.get();
+            book.setAuthor(author);
+            bookRepository.save(book);
+            author.getBooks().add(book);
+            return authorRepository.save(author);
+        } else {
+            throw new RuntimeException("Author not found with id: " + authorId);
+        }
     }
 
-    public Optional<Author> getAuthorByBookId(Long bookId) {
-        return authorRepository.findAuthorByBookId(bookId);
+    public Author getAuthorByBookId(Long bookId) {
+        Optional<Book> optionalBook = bookRepository.findById(bookId);
+        if (optionalBook.isPresent()) {
+            return optionalBook.get().getAuthor();
+        } else {
+            throw new RuntimeException("Book not found with id: " + bookId);
+        }
     }
 }

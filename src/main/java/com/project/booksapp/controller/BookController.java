@@ -56,6 +56,16 @@ public class BookController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @PutMapping("/{bookId}/author/{authorId}")
+    public ResponseEntity<Book> assignAuthorToBook(@PathVariable Long bookId, @PathVariable Long authorId) {
+        Book updatedBook = bookService.assignAuthorToBook(bookId, authorId);
+        if (updatedBook != null) {
+            return new ResponseEntity<>(updatedBook, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         Optional<Book> book = bookService.getBookById(id);

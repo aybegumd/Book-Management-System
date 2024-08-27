@@ -1,7 +1,9 @@
 package com.project.booksapp.entity;
 
+
 import jakarta.persistence.*;
 import lombok.Data;
+
 
 
 import java.time.LocalDate;
@@ -21,15 +23,15 @@ public class Book {
     private boolean available;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id") //lazyfetch eagerfetch
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "author_id", referencedColumnName = "id")
     private Author author;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "publisher_id")
     private Publisher publisher;
 
