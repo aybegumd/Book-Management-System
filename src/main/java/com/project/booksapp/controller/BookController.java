@@ -56,9 +56,19 @@ public class BookController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PutMapping("/{bookId}/author/{authorId}")
-    public ResponseEntity<Book> assignAuthorToBook(@PathVariable Long bookId, @PathVariable Long authorId) {
-        Book updatedBook = bookService.assignAuthorToBook(bookId, authorId);
+    @PutMapping("/isbn/{isbn}/author/name/{authorName}")
+    public ResponseEntity<Book> assignAuthorToBookByIsbn(@PathVariable String isbn, @PathVariable String authorName) {
+        Book updatedBook = bookService.assignAuthorToBookByIsbn(isbn, authorName);
+        if (updatedBook != null) {
+            return new ResponseEntity<>(updatedBook, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/{bookId}/category/name/{categoryName}")
+    public ResponseEntity<Book> assignCategoryToBookByName(@PathVariable Long bookId, @PathVariable String categoryName) {
+        Book updatedBook = bookService.assignCategoryToBookByName(bookId, categoryName);
         if (updatedBook != null) {
             return new ResponseEntity<>(updatedBook, HttpStatus.OK);
         } else {
@@ -77,5 +87,19 @@ public class BookController {
         bookService.deleteBook(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Book>> searchBooks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String authorName,
+            @RequestParam(required = false) String categoryName)
+    {
+        List<Book> books = bookService.searchBooks(title, authorName, categoryName);
+        if (books.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(books, HttpStatus.OK);
+    }
+
 }
 

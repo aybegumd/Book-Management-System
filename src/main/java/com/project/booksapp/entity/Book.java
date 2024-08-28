@@ -1,9 +1,9 @@
 package com.project.booksapp.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
-
 
 
 import java.time.LocalDate;
@@ -19,15 +19,16 @@ public class Book {
 
     private String title;
     private LocalDate publishedDate;
-    private String ISBN;
+    private String isbn;
     private boolean available;
 
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "author_id", referencedColumnName = "id")
+    @JsonBackReference
     private Author author;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "category_id")
     private Category category;
 

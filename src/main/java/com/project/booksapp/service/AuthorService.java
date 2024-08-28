@@ -21,6 +21,8 @@ public class AuthorService {
     @Autowired
     private BookRepository bookRepository;
 
+
+
     public List<Author> getAllAuthors() {
         return authorRepository.findAll();
     }
@@ -44,7 +46,7 @@ public class AuthorService {
             book.setAuthor(author);
             bookRepository.save(book);
             author.getBooks().add(book);
-            return authorRepository.save(author);
+            return authorRepository.save(author);  // Save the author with the updated book list
         } else {
             throw new RuntimeException("Author not found with id: " + authorId);
         }
